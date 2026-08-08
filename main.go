@@ -77,7 +77,19 @@ func main() {
 	// Cliente SQS (AWS SDK)
 	var sqsSvc *sqs.SQS
 	if sqsQueueURL != "" {
-		sess, err := session.NewSession(&aws.Config{Region: aws.String(awsRegion)})
+		awsConfig := &aws.Config{Region: aws.String(awsRegion)}
+
+		// Suporte a endpoint customizado (ex: LocalStack no ambiente local).
+		// O aws-sdk-go v1 não lê AWS_ENDPOINT_URL automaticamente, diferente
+		// do boto3, então é preciso passar o endpoint explicitamente.
+		// Em produção a variável fica vazia e o SDK usa os endpoints da AWS.
+		if awsEndpoint := os.Getenv("AWS_ENDPOINT_URL"); awsEndpoint != "" {
+			awsConfig.Endpoint = aws.String(awsEndpoint)
+			awsConfig.S3ForcePathStyle = aws.Bool(true)
+			log.Printf("Usando endpoint AWS customizado: %s", awsEndpoint)
+		}
+
+		sess, err := session.NewSession(awsConfig)
 		if err != nil {
 			log.Fatalf("Não foi possível criar sessão AWS: %v", err)
 		}
