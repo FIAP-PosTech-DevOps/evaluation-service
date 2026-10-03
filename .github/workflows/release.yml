@@ -1,0 +1,38 @@
+# Botões de release (aba Actions > release > Run workflow):
+#   criar-release      release/vX.Y.Z a partir da main
+#   promover-staging   tag vX.Y.Z-rc.N no último commit da release
+#   promover-producao  tag vX.Y.Z no commit do último rc
+# A lógica fica em toggle-master-infra/.github/workflows/git-release.yml.
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      acao:
+        description: O que fazer
+        type: choice
+        options: [criar-release, promover-staging, promover-producao]
+        required: true
+      tipo-de-versao:
+        description: "Só para criar-release: patch (correção), minor (funcionalidade), major (quebra de contrato)"
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      release:
+        description: "Branch da release (ex.: release/v1.2.0). Vazio = a mais recente"
+        type: string
+        required: false
+
+# Nada por padrão; cada job pede só o que usa.
+permissions: {}
+
+jobs:
+  release:
+    uses: FIAP-PosTech-DevOps/toggle-master-infra/.github/workflows/git-release.yml@main
+    permissions:
+      contents: read
+    with:
+      action: ${{ inputs.acao }}
+      bump: ${{ inputs.tipo-de-versao }}
+      release: ${{ inputs.release }}
+    secrets: inherit

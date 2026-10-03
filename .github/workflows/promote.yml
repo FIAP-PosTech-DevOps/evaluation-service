@@ -1,0 +1,23 @@
+# Promoção do evaluation-service por tag (criada pelo botão do release.yml):
+#   vX.Y.Z-rc.N -> staging      vX.Y.Z -> production (com aprovação)
+# Sem novo build: promove a mesma imagem que passou por develop.
+name: promote
+
+on:
+  push:
+    tags: ["v*"]
+
+# Nada por padrão; cada job pede só o que usa.
+permissions: {}
+
+jobs:
+  promote:
+    uses: FIAP-PosTech-DevOps/toggle-master-infra/.github/workflows/service-promote.yml@main
+    permissions:
+      contents: read
+      id-token: write      # OIDC com a AWS para conferir a imagem no ECR
+      pull-requests: write # abre o PR release -> main depois de produção
+    with:
+      service-name: evaluation-service
+      aws-account-id: ${{ vars.AWS_ACCOUNT_ID }}
+    secrets: inherit

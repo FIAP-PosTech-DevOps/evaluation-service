@@ -1,0 +1,12 @@
+# golangci-lint v2. "standard" = errcheck, govet, ineffassign, staticcheck e
+# unused. bodyclose garante que toda resposta HTTP tem o Body fechado.
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+
+formatters:
+  enable:
+    - gofmt

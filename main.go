@@ -62,7 +62,7 @@ func main() {
 	}
 
 	// --- Inicializa Clientes ---
-	
+
 	// Cliente Redis
 	opt, err := redis.ParseURL(redisURL)
 	if err != nil {
@@ -112,13 +112,28 @@ func main() {
 		TargetingServiceURL: targetingSvcURL,
 	}
 
-	// --- Rotas ---
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", app.healthHandler)
-	mux.HandleFunc("/evaluate", app.evaluationHandler)
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: app.routes(),
+		// Timeouts explícitos: sem eles um cliente lento (ou malicioso) prende
+		// a conexão indefinidamente (ataque do tipo Slowloris).
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 
 	log.Printf("Serviço de Avaliação (Go) rodando na porta %s", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// routes registra as rotas da API. Fica separado do main para os testes
+// exercitarem o roteamento real sem Redis nem SQS.
+func (a *App) routes() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", a.healthHandler)
+	mux.HandleFunc("/evaluate", a.evaluationHandler)
+	return mux
 }
