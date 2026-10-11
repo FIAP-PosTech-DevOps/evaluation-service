@@ -6,6 +6,13 @@ linters:
   default: standard
   enable:
     - bodyclose
+  exclusions:
+    rules:
+      # O aws-sdk-go v1 está em fim de suporte (jul/2025). Débito técnico
+      # registrado: migrar o envio ao SQS para o aws-sdk-go-v2. Até lá, só
+      # este aviso de "deprecated" é ignorado; o resto do staticcheck vale.
+      - linters: [staticcheck]
+        text: 'SA1019: "github.com/aws/aws-sdk-go/'
 
 formatters:
   enable:
