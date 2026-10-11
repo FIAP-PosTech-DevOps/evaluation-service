@@ -1,0 +1,20 @@
+# golangci-lint v2. "standard" = errcheck, govet, ineffassign, staticcheck e
+# unused. bodyclose garante que toda resposta HTTP tem o Body fechado.
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+  exclusions:
+    rules:
+      # O aws-sdk-go v1 está em fim de suporte (jul/2025). Débito técnico
+      # registrado: migrar o envio ao SQS para o aws-sdk-go-v2. Até lá, só
+      # este aviso de "deprecated" é ignorado; o resto do staticcheck vale.
+      - linters: [staticcheck]
+        # Regex: as versões do golangci-lint escrevem o pacote com ou sem aspas.
+        text: 'SA1019: "?github\.com/aws/aws-sdk-go/'
+
+formatters:
+  enable:
+    - gofmt

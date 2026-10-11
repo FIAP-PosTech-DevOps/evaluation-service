@@ -1,0 +1,38 @@
+# CI / DevSecOps do evaluation-service. A pipeline completa (build, testes, lint,
+# SonarQube Cloud, Snyk/Trivy, imagem no ECR e deploy em develop) fica em
+# toggle-master-infra/.github/workflows/service-ci.yml, compartilhada pelos
+# 5 serviços.
+#
+#   PR para release/* ou main  -> build, testes, lint e scans (não publica)
+#   push em release/vX.Y.Z     -> tudo + imagem vX.Y.Z-<sha> no ECR + develop
+name: ci
+
+on:
+  pull_request:
+    branches: ["release/**", main]
+  push:
+    branches: ["release/**"]
+
+# Um push novo na mesma branch/PR cancela a execução anterior ainda em curso.
+# Nada por padrão; cada job pede só o que usa.
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pipeline:
+    uses: FIAP-PosTech-DevOps/toggle-master-infra/.github/workflows/service-ci.yml@main
+    permissions:
+      contents: read
+      id-token: write        # OIDC com a AWS para o push no ECR
+      security-events: write # resultados do Snyk/Trivy na aba Security
+    with:
+      service-name: evaluation-service
+      language: go
+      aws-account-id: ${{ vars.AWS_ACCOUNT_ID }}
+      sonar-organization: ${{ vars.SONAR_ORGANIZATION }}
+      # Plano B: defina a variável SCA_TOOL=trivy para trocar o Snyk pelo Trivy.
+      sca-tool: ${{ vars.SCA_TOOL || 'snyk' }}
+    secrets: inherit

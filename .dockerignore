@@ -1,0 +1,7 @@
+.git
+.github
+*_test.go
+coverage.out
+*.md
+.env
+.env.*
