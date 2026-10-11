@@ -12,7 +12,8 @@ linters:
       # registrado: migrar o envio ao SQS para o aws-sdk-go-v2. Até lá, só
       # este aviso de "deprecated" é ignorado; o resto do staticcheck vale.
       - linters: [staticcheck]
-        text: 'SA1019: "github.com/aws/aws-sdk-go/'
+        # Regex: as versões do golangci-lint escrevem o pacote com ou sem aspas.
+        text: 'SA1019: "?github\.com/aws/aws-sdk-go/'
 
 formatters:
   enable:
