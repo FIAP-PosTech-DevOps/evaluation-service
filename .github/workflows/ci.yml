@@ -1,10 +1,14 @@
 # CI / DevSecOps do evaluation-service. A pipeline completa (build, testes, lint,
-# SonarQube Cloud, Snyk/Trivy, imagem no ECR e deploy em develop) fica em
+# SonarQube Cloud, Snyk/Trivy, imagem no ECR e deploy) fica em
 # toggle-master-infra/.github/workflows/service-ci.yml, compartilhada pelos
 # 5 serviços.
 #
-#   PR para release/* ou main  -> build, testes, lint e scans (não publica)
-#   push em release/vX.Y.Z     -> tudo + imagem vX.Y.Z-<sha> no ECR + develop
+#   PR para release/* ou main       -> build, testes, lint e scans (não publica)
+#   botão Run workflow (qualquer     -> tudo + imagem dev-<branch>-<sha> no ECR
+#     branch em "Use workflow from")    + deploy em develop
+#   push em release/vX.Y.Z          -> tudo + imagem vX.Y.Z-<sha> + deploy em staging
+#
+# Production fica no promote.yml (merge do PR release -> main).
 name: ci
 
 on:
@@ -12,11 +16,12 @@ on:
     branches: ["release/**", main]
   push:
     branches: ["release/**"]
+  workflow_dispatch: {}
 
-# Um push novo na mesma branch/PR cancela a execução anterior ainda em curso.
 # Nada por padrão; cada job pede só o que usa.
 permissions: {}
 
+# Um push novo na mesma branch/PR cancela a execução anterior ainda em curso.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -26,7 +31,7 @@ jobs:
     uses: FIAP-PosTech-DevOps/toggle-master-infra/.github/workflows/service-ci.yml@main
     permissions:
       contents: read
-      id-token: write        # OIDC com a AWS para o push no ECR
+      id-token: write        # OIDC com a AWS para o push no ECR (só no job de deploy)
       security-events: write # resultados do Snyk/Trivy na aba Security
     with:
       service-name: evaluation-service

@@ -109,9 +109,10 @@ O deploy não é mais feito com `kubectl`: a pipeline publica a imagem no ECR e 
 | Workflow | Quando roda | O que faz |
 |---|---|---|
 | `ci.yml` | PR para `release/*` ou `main` | build, testes, lint, SonarQube Cloud (SAST), Snyk ou Trivy (SCA) e scan da imagem com Trivy, sem publicar |
-| `ci.yml` | push em `release/vX.Y.Z` | o mesmo + imagem `vX.Y.Z-<sha>` no ECR + deploy em **develop** |
-| `release.yml` | botão (Actions → release → Run workflow) | `criar-release`, `promover-staging` (tag `-rc.N`) e `promover-producao` (tag final) |
-| `promote.yml` | push de tag `v*` | re-scan da imagem e deploy em **staging** (`-rc.N`) ou **production** (com aprovação) |
+| `ci.yml` | botão (Actions → ci → Run workflow), com **qualquer branch** em "Use workflow from" | o mesmo + imagem `dev-<branch>-<sha>` no ECR + deploy em **develop** |
+| `ci.yml` | push em `release/vX.Y.Z` (merge de um PR no pacote) | o mesmo + imagem `vX.Y.Z-<sha>` no ECR + deploy em **staging** |
+| `promote.yml` | merge do PR `release/vX.Y.Z` → `main` | confere se a imagem é a de staging, re-scan com Trivy, aprovação e deploy em **production**, sem novo build; cria a tag `vX.Y.Z` na main |
+| `release.yml` | botão (Actions → release → Run workflow) | `criar-release`: cria `release/vX.Y.Z` a partir da main (patch, minor ou major) |
 
 Uma vulnerabilidade **crítica** (dependência ou imagem) ou o Quality Gate do Sonar reprovado interrompem a pipeline, e nada chega ao ECR.
 
