@@ -1,0 +1,7 @@
+# TechDocs (Backstage): o site é gerado a partir de docs/.
+site_name: evaluation-service
+docs_dir: docs
+plugins:
+  - techdocs-core
+nav:
+  - Início: index.md
