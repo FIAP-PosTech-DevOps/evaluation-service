@@ -122,3 +122,5 @@ Para rodar localmente as mesmas verificações da pipeline:
 go test -race -cover ./...          # testes unitários
 golangci-lint run                   # lint (mesma configuração da CI: .golangci.yml)
 ```
+
+> Demonstração da Fase 3: esta linha passou por develop, staging e production.
